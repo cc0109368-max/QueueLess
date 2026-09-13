@@ -1,0 +1,263 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+// ==================================================
+// Shop — Multi-tenant root
+// ==================================================
+
+model Shop {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String   @default("")
+  status      String   @default("OPEN") // OPEN, CLOSED, TEMPORARILY_CLOSED
+  openTime    String   @default("06:00")
+  closeTime   String   @default("22:00")
+  onlinePaymentEnabled Boolean @default(true)
+  cashPaymentEnabled   Boolean @default(true)
+  taxPercent  Float    @default(0)
+  orderPrefix String   @default("A")
+  dailyOrderSeq Int    @default(0)
+  lastOrderDate String @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categories      Category[]
+  counters        Counter[]
+  products        Product[]
+  orders          Order[]
+  staffMemberships StaffMembership[]
+  payments        Payment[]
+  auditLogs       AuditLog[]
+}
+
+// ==================================================
+// User & Staff
+// ==================================================
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  staffMemberships StaffMembership[]
+  auditLogs        AuditLog[]
+}
+
+model StaffMembership {
+  id        String   @id @default(uuid())
+  userId    String
+  shopId    String
+  role      String   // OWNER, ADMIN, BILLING, COUNTER_STAFF
+  counterId String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop    Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  counter Counter? @relation(fields: [counterId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, shopId])
+  @@index([shopId])
+  @@index([counterId])
+}
+
+// ==================================================
+// Menu — Categories & Products
+// ==================================================
+
+model Category {
+  id        String   @id @default(uuid())
+  shopId    String
+  name      String
+  slug      String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shop     Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  products Product[]
+
+  @@unique([shopId, slug])
+  @@index([shopId])
+}
+
+model Counter {
+  id        String   @id @default(uuid())
+  shopId    String
+  name      String
+  code      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  shop             Shop              @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  products         Product[]
+  counterTickets   CounterTicket[]
+  staffMemberships StaffMembership[]
+
+  @@unique([shopId, code])
+  @@index([shopId])
+}
+
+model Product {
+  id           String   @id @default(uuid())
+  shopId       String
+  categoryId   String
+  counterId    String
+  name         String
+  description  String   @default("")
+  price        Float
+  imageUrl     String?
+  availability String   @default("AVAILABLE") // AVAILABLE, SOLD_OUT, DISABLED
+  maxQuantity  Int      @default(20)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  shop       Shop       @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  category   Category   @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  counter    Counter    @relation(fields: [counterId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@index([shopId])
+  @@index([categoryId])
+  @@index([counterId])
+  @@index([shopId, availability])
+}
+
+// ==================================================
+// Orders
+// ==================================================
+
+model Order {
+  id             String   @id @default(uuid())
+  shopId         String
+  orderNumber    String
+  status         String   @default("PENDING")
+  paymentMethod  String   // ONLINE, CASH
+  subtotal       Float
+  taxAmount      Float    @default(0)
+  total          Float
+  customerName   String?
+  idempotencyKey String?
+  isManual       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  shop           Shop               @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  items          OrderItem[]
+  payments       Payment[]
+  statusHistory  OrderStatusHistory[]
+  counterTickets CounterTicket[]
+
+  @@unique([shopId, orderNumber])
+  @@unique([shopId, idempotencyKey])
+  @@index([shopId])
+  @@index([shopId, status])
+  @@index([shopId, createdAt])
+}
+
+model OrderItem {
+  id          String @id @default(uuid())
+  orderId     String
+  productId   String
+  productName String
+  quantity    Int
+  unitPrice   Float
+  totalPrice  Float
+  counterId   String
+  counterName String
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([counterId])
+}
+
+model CounterTicket {
+  id         String    @id @default(uuid())
+  orderId    String
+  counterId  String
+  status     String    @default("PENDING") // PENDING, ACCEPTED, PREPARING, READY
+  acceptedAt DateTime?
+  readyAt    DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  counter Counter @relation(fields: [counterId], references: [id], onDelete: Cascade)
+
+  @@unique([orderId, counterId])
+  @@index([counterId, status])
+  @@index([orderId])
+}
+
+model Payment {
+  id           String    @id @default(uuid())
+  orderId      String
+  shopId       String
+  method       String    // ONLINE, CASH
+  status       String    @default("PENDING") // PENDING, SUCCESS, FAILED, REFUNDED
+  amount       Float
+  providerRef  String?
+  providerData String?
+  confirmedAt  DateTime?
+  confirmedBy  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  shop  Shop  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([shopId])
+  @@index([providerRef])
+}
+
+model OrderStatusHistory {
+  id         String   @id @default(uuid())
+  orderId    String
+  fromStatus String?
+  toStatus   String
+  changedBy  String?
+  note       String?
+  createdAt  DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+}
+
+// ==================================================
+// Audit & Logging
+// ==================================================
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  shopId    String
+  userId    String?
+  userName  String?
+  action    String
+  entity    String
+  entityId  String?
+  details   String?
+  createdAt DateTime @default(now())
+
+  shop Shop  @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([shopId])
+  @@index([shopId, createdAt])
+}

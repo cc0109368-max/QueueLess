@@ -1,0 +1,29 @@
+{
+  "name": "queueless",
+  "version": "1.0.0",
+  "private": true,
+  "description": "QR-based digital ordering and billing system for food shops",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently --kill-others-on-fail -n \"api,customer,admin\" -c \"blue,green,magenta\" \"npm run dev:api\" \"npm run dev:customer\" \"npm run dev:admin\"",
+    "dev:api": "npm run dev --workspace=apps/api",
+    "dev:customer": "wait-on tcp:4000 && npm run dev --workspace=apps/customer",
+    "dev:admin": "wait-on tcp:4000 && npm run dev --workspace=apps/admin",
+    "build": "npm run build --workspaces --if-present",
+    "test": "npm run test --workspace=apps/api",
+    "db:generate": "npm run generate --workspace=packages/database",
+    "db:migrate": "npm run migrate --workspace=packages/database",
+    "db:seed": "npm run seed --workspace=packages/database",
+    "db:reset": "npm run reset --workspace=packages/database",
+    "db:setup": "npm run db:generate && npm run db:migrate && npm run db:seed",
+    "typecheck": "tsc --noEmit --project tsconfig.base.json"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.4.5",
+    "wait-on": "^9.1.0"
+  }
+}

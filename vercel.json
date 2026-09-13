@@ -1,0 +1,10 @@
+{
+  "buildCommand": "npm run build --workspace=apps/customer",
+  "outputDirectory": "apps/customer/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
+  ]
+}

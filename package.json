@@ -12,13 +12,15 @@
     "dev:api": "npm run dev --workspace=apps/api",
     "dev:customer": "wait-on tcp:4000 && npm run dev --workspace=apps/customer",
     "dev:admin": "wait-on tcp:4000 && npm run dev --workspace=apps/admin",
-    "build": "npm run build --workspaces --if-present",
+    "build:packages": "npm run build --workspace=packages/types && npm run build --workspace=packages/validation && npm run build --workspace=packages/database",
+    "build": "npm run build:packages && npm run build --workspaces --if-present",
     "test": "npm run test --workspace=apps/api",
     "db:generate": "npm run generate --workspace=packages/database",
+    "db:push": "npm run push --workspace=packages/database",
     "db:migrate": "npm run migrate --workspace=packages/database",
     "db:seed": "npm run seed --workspace=packages/database",
     "db:reset": "npm run reset --workspace=packages/database",
-    "db:setup": "npm run db:generate && npm run db:migrate && npm run db:seed",
+    "db:setup": "npm run db:generate && npm run db:push && npm run db:seed",
     "typecheck": "tsc --noEmit --project tsconfig.base.json"
   },
   "devDependencies": {

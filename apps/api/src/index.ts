@@ -16,8 +16,9 @@ const app = express();
 const server = http.createServer(app);
 
 // CORS
-const corsOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173,http://localhost:5174,http://localhost:3000').split(',');
-app.use(cors({ origin: corsOrigins, credentials: true }));
+const rawCors = process.env.CORS_ORIGIN || 'http://localhost:5173,http://localhost:5174,http://localhost:3000';
+const corsOrigins = rawCors.split(',').map((o) => o.trim()).filter(Boolean);
+app.use(cors({ origin: corsOrigins.length === 1 && corsOrigins[0] === '*' ? '*' : corsOrigins, credentials: true }));
 
 // Body parsing
 app.use(express.json({ limit: '1mb' }));

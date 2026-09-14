@@ -2,58 +2,65 @@
 // QueueLess — Shared Types & Enums
 // ==================================================
 
-// ---- Enums ----
+// ---- Enums (const objects + type aliases for runtime compatibility) ----
 
-export enum UserRole {
-  OWNER = 'OWNER',
-  ADMIN = 'ADMIN',
-  BILLING = 'BILLING',
-  COUNTER_STAFF = 'COUNTER_STAFF',
-}
+export const UserRole = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  BILLING: 'BILLING',
+  COUNTER_STAFF: 'COUNTER_STAFF',
+} as const;
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
-export enum ProductAvailability {
-  AVAILABLE = 'AVAILABLE',
-  SOLD_OUT = 'SOLD_OUT',
-  DISABLED = 'DISABLED',
-}
+export const ProductAvailability = {
+  AVAILABLE: 'AVAILABLE',
+  SOLD_OUT: 'SOLD_OUT',
+  DISABLED: 'DISABLED',
+} as const;
+export type ProductAvailability = (typeof ProductAvailability)[keyof typeof ProductAvailability];
 
-export enum OrderStatus {
-  PENDING = 'PENDING',
-  PAYMENT_PENDING = 'PAYMENT_PENDING',
-  CASH_PENDING = 'CASH_PENDING',
-  CONFIRMED = 'CONFIRMED',
-  PREPARING = 'PREPARING',
-  READY = 'READY',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED',
-  FAILED = 'FAILED',
-  EXPIRED = 'EXPIRED',
-}
+export const OrderStatus = {
+  PENDING: 'PENDING',
+  PAYMENT_PENDING: 'PAYMENT_PENDING',
+  CASH_PENDING: 'CASH_PENDING',
+  CONFIRMED: 'CONFIRMED',
+  PREPARING: 'PREPARING',
+  READY: 'READY',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  FAILED: 'FAILED',
+  EXPIRED: 'EXPIRED',
+} as const;
+export type OrderStatus = (typeof OrderStatus)[keyof typeof OrderStatus];
 
-export enum PaymentMethod {
-  ONLINE = 'ONLINE',
-  CASH = 'CASH',
-}
+export const PaymentMethod = {
+  ONLINE: 'ONLINE',
+  CASH: 'CASH',
+} as const;
+export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod];
 
-export enum PaymentStatus {
-  PENDING = 'PENDING',
-  SUCCESS = 'SUCCESS',
-  FAILED = 'FAILED',
-  REFUNDED = 'REFUNDED',
-}
+export const PaymentStatus = {
+  PENDING: 'PENDING',
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED',
+  REFUNDED: 'REFUNDED',
+} as const;
+export type PaymentStatus = (typeof PaymentStatus)[keyof typeof PaymentStatus];
 
-export enum ShopStatus {
-  OPEN = 'OPEN',
-  CLOSED = 'CLOSED',
-  TEMPORARILY_CLOSED = 'TEMPORARILY_CLOSED',
-}
+export const ShopStatus = {
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED',
+  TEMPORARILY_CLOSED: 'TEMPORARILY_CLOSED',
+} as const;
+export type ShopStatus = (typeof ShopStatus)[keyof typeof ShopStatus];
 
-export enum CounterTicketStatus {
-  PENDING = 'PENDING',
-  ACCEPTED = 'ACCEPTED',
-  PREPARING = 'PREPARING',
-  READY = 'READY',
-}
+export const CounterTicketStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  PREPARING: 'PREPARING',
+  READY: 'READY',
+} as const;
+export type CounterTicketStatus = (typeof CounterTicketStatus)[keyof typeof CounterTicketStatus];
 
 // ---- Domain Types ----
 
@@ -267,25 +274,27 @@ export interface AuthResponse {
 
 // ---- Socket Events ----
 
-export enum SocketEvent {
-  JOIN_SHOP_ROOM = 'join:shop',
-  JOIN_COUNTER_ROOM = 'join:counter',
-  ORDER_CREATED = 'order:created',
-  ORDER_UPDATED = 'order:updated',
-  CASH_CONFIRMED = 'cash:confirmed',
-  COUNTER_TICKET_UPDATED = 'counter:ticket:updated',
-  PRODUCT_UPDATED = 'product:updated',
-  CONNECTION_STATUS = 'connection:status',
-}
+export const SocketEvent = {
+  JOIN_SHOP_ROOM: 'join:shop',
+  JOIN_COUNTER_ROOM: 'join:counter',
+  ORDER_CREATED: 'order:created',
+  ORDER_UPDATED: 'order:updated',
+  CASH_CONFIRMED: 'cash:confirmed',
+  COUNTER_TICKET_UPDATED: 'counter:ticket:updated',
+  PRODUCT_UPDATED: 'product:updated',
+  CONNECTION_STATUS: 'connection:status',
+} as const;
+export type SocketEvent = (typeof SocketEvent)[keyof typeof SocketEvent];
 
-export enum SocketEvents {
-  ORDER_CREATED = 'order:created',
-  ORDER_UPDATED = 'order:updated',
-  CASH_CONFIRMED = 'cash:confirmed',
-  COUNTER_TICKET_UPDATED = 'counter:ticket:updated',
-  PRODUCT_UPDATED = 'product:updated',
-  CONNECTION_STATUS = 'connection:status',
-}
+export const SocketEvents = {
+  ORDER_CREATED: 'order:created',
+  ORDER_UPDATED: 'order:updated',
+  CASH_CONFIRMED: 'cash:confirmed',
+  COUNTER_TICKET_UPDATED: 'counter:ticket:updated',
+  PRODUCT_UPDATED: 'product:updated',
+  CONNECTION_STATUS: 'connection:status',
+} as const;
+export type SocketEvents = (typeof SocketEvents)[keyof typeof SocketEvents];
 
 export interface SocketOrderPayload {
   order: OrderResponse;
